@@ -1,5 +1,6 @@
-const SquareIncheck = (coord, enemySquares) => {
-    for(const e of enemySquares) {
+export const SquareIncheck = (coord, enemySquares) => {
+    for (const e of enemySquares) {
+        if (e[0] === undefined) console.log(e, "errror");
         if (coord[0] === e[0] && coord[1] === e[1]) return false;
     }
     return true;
@@ -23,7 +24,7 @@ const possibleMoves = {
             let aY = lastMove[1];
             let ponto = board[bY][bX];
             board[bY][bX] = "none";
-            if (lastMove[4] === "p" && aX === bX && ((bY - aY) ** 2) ** 0.5 === 2 && bY === y && squareRemoveCheck(x, y, bX, bY + add, col, board, lastMove, rock)) {
+            if (((aX - x) ** 2) ** 0.5 === 1 && lastMove[4] === "p" && aX === bX && ((bY - aY) ** 2) ** 0.5 === 2 && bY === y && squareRemoveCheck(x, y, bX, bY + add, col, board, lastMove, rock)) {
                 res.push([bY + add, bX, [bX, bY]]);
             }
             board[bY][bX] = ponto;
@@ -45,7 +46,6 @@ const possibleMoves = {
             if (leaveBOARD(x + 1, y + add) && board[y + add][x + 1][2] === enemy && squareRemoveCheck(x, y, x + 1, y + add, col, board, lastMove, rock)) {
                 res.push([y + add, x + 1]);
             }
-
             if (leaveBOARD(x - 1, y + add) && board[y + add][x - 1][2] === enemy && squareRemoveCheck(x, y, x - 1, y + add, col, board, lastMove, rock)) {
                 res.push([y + add, x - 1]);
             }
@@ -55,9 +55,9 @@ const possibleMoves = {
                 [x + 1, y + add],
                 [x, y + add],
             ];
-            pos.forEach((e) => {
+            for (const e of pos) {
                 if (leaveBOARD(e[0], e[1])) res.push([e[1], e[0]]);
-            });
+            }
             if (y === size) res.push([y + 2 * add, x]);
         }
         return res;
@@ -241,18 +241,31 @@ const possibleMoves = {
     },
 };
 
-export const getMoves = (c, params, board, lastMove, rock) => {
+export const getMoves = (c, board, lastMove, rock) => {
     let rep = [];
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             if (board[y][x][2] === c) {
-                const possibility = possibleMoves[board[y][x][0]](x, y, params, c, board, lastMove, rock);
+                const type = board[y][x][0];
+                const possibility = possibleMoves[type](x, y, 1, c, board, lastMove, rock);
                 for (const square of possibility) {
-                    rep.push({
-                        start: [y, x],
-                        end: square,
-                        type:board[y][x][0],
-                    });
+                    if ((square[0] === 0 || square[0] === 7) && type === "p") {
+                        for (const piece of ["q", "k", "r", "b"]) {
+                            rep.push({
+                                start: [y, x],
+                                end: square,
+                                type,
+                                promotion: `${piece}_${board[y][x][2]}`,
+                            });
+                        }
+                    } else {
+                        rep.push({
+                            start: [y, x],
+                            end: square,
+                            type,
+                            promotion: false,
+                        });
+                    }
                 }
             }
         }
@@ -260,7 +273,7 @@ export const getMoves = (c, params, board, lastMove, rock) => {
     return rep;
 };
 
-const recupAllCases = (c, params, board, lastMove, rock) => {
+export const recupAllCases = (c, params, board, lastMove, rock) => {
     let rep = [];
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
@@ -269,7 +282,7 @@ const recupAllCases = (c, params, board, lastMove, rock) => {
     }
     return rep;
 };
-const findKing = (col, board) => {
+export const findKing = (col, board) => {
     for (let a = 0; a < 8; a++) {
         for (let b = 0; b < 8; b++) {
             if (board[b][a] === `m_${col}`) return [b, a];
@@ -279,7 +292,6 @@ const findKing = (col, board) => {
 const leaveBOARD = (x, y) => {
     if (x < 0 || x > 7 || y < 0 || y > 7) return false;
     else return true;
-    
 };
 const squareRemoveCheck = (x, y, xx, yy, col, board, lastMove, rock) => {
     let enemy = "b";
@@ -302,23 +314,23 @@ export const kingInCheck = (color, enemy, board) => {
 };
 
 export const verifEndGame = (board, coups, color, lastMove) => {
-    
     const last6coups = coups.slice(coups.length - 6, coups.length);
     let res = 3;
+    console.log(last6coups);
     if (last6coups.length === 6) {
         if (
             last6coups[0][0] === last6coups[4][0] &&
             last6coups[0][1] === last6coups[4][1] &&
             last6coups[0][2] === last6coups[4][2] &&
             last6coups[0][3] === last6coups[4][3] &&
-            last6coups[4][2] === last6coups[2][0] &&
-            last6coups[4][3] === last6coups[2][1] &&
             last6coups[1][0] === last6coups[5][0] &&
             last6coups[1][1] === last6coups[5][1] &&
             last6coups[1][2] === last6coups[5][2] &&
             last6coups[1][3] === last6coups[5][3] &&
-            last6coups[5][2] === last6coups[3][0] &&
-            last6coups[5][3] === last6coups[3][1]
+            last6coups[1][0] === last6coups[3][2] &&
+            last6coups[1][1] === last6coups[3][3] &&
+            last6coups[1][2] === last6coups[3][0] &&
+            last6coups[1][3] === last6coups[3][1]
         )
             return 2;
     }
