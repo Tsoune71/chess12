@@ -7,7 +7,7 @@ function Search(depth, board, last) {
     if (scoreIfExist) {
         return scoreIfExist;
     }
-    if (depth === 2) return board.value("b", bin);
+    if (depth === 3) return board.value("b", bin);
 
     const moves = board.generatorMoves(depth % 2 === 1, last);
     // no moves for other player
