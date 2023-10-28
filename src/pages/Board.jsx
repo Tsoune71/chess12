@@ -149,11 +149,18 @@ const Board = () => {
                 }
                 rockIA = [false, false];
             }
+            if (type === "r" && start[1] === 0) {
+                rockIA[0] = false;
+            }
+            if (type === "r" && start[1] === 7) {
+                rockIA[1] = false;
+            }
             laodPieces(board);
             boxes.forEach((e) => {
                 e.style.boxShadow = "";
                 e.classList.remove("casePlay");
             });
+            zz(".promotion").style.display = "none";
             boxes[end[0] * 8 + end[1]].classList.add("casePlay");
             boxes[start[0] * 8 + start[1]].classList.add("casePlay");
             youCanPlay = true;

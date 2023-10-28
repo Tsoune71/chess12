@@ -15,8 +15,8 @@ const valuePosition = {
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 5, 5, 0, 0, 0],
-            [0, 0, 0, 4, 4, 0, 0, 0],
+            [0, 0, 0, 9, 9, 0, 0, 0],
+            [0, 0, 0, 8, 8, 0, 0, 0],
             [1, 0, 1, 2, 2, 1, 0, 1],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -32,13 +32,13 @@ const valuePosition = {
             [0, 0, 0, 0, 0, 0, 0, 0],
         ],
         [
-            [9, 9, 9, 9, 9, 9, 9, 9],
-            [6, 6, 6, 6, 6, 6, 6, 6],
             [5, 5, 5, 5, 5, 5, 5, 5],
-            [4, 4, 4, 4, 4, 4, 4, 4],
-            [3, 3, 3, 3, 3, 3, 3, 3],
             [2, 2, 2, 2, 2, 2, 2, 2],
-            [1, 1, 1, 1, 1, 1, 1, 1],
+            [-1, -1, -1, -1, -1, -1, -1, -1],
+            [-2, -2, -2, -2, -2, -2, -2, -2],
+            [-3, -3, -3, -3, -3, -3, -3, -3],
+            [-4, -4, -4, -4, -4, -4, -4, -4],
+            [-5, -5, -5, -5, -5, -5, -5, -5],
             [0, 0, 0, 0, 0, 0, 0, 0],
         ],
     ],
@@ -47,11 +47,11 @@ const valuePosition = {
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 0, 2, 2, 0, 2, 0],
+            [0, 3, 0, 3, 3, 0, 3, 0],
+            [0, 0, 0, 3, 3, 0, 0, 0],
+            [0, 0, 3, 0, 0, 3, 0, 0],
             [0, 0, 0, 2, 2, 0, 0, 0],
-            [0, 0, 2, 0, 0, 2, 0, 0],
-            [0, 0, 0, 2, 2, 0, 0, 0],
-            [0, -1, 0, 0, 0, 0, -1, 0],
+            [0, -5, 0, 0, 0, 0, -5, 0],
         ],
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -79,11 +79,11 @@ const valuePosition = {
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 0, 0, 0, 0, 2, 0],
-            [0, 0, 2, 0, 0, 2, 0, 0],
-            [0, 2, 0, 1, 1, 0, 2, 0],
+            [0, 1, 0, 0, 0, 0, 1, 0],
+            [2, 0, 1, 0, 0, 1, 0, 2],
             [0, 1, 0, 1, 1, 0, 1, 0],
-            [0, 0, -1, 0, 0, -1, 0, 0],
+            [0, 1, 0, 1, 1, 0, 1, 0],
+            [0, 0, -5, 0, 0, -5, 0, 0],
         ],
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -108,14 +108,14 @@ const valuePosition = {
     ],
     r: [
         [
-            [3, 0, 0, 2, 0, 2, 0, 3],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 0, 0, 4, 0, 4, 0, 2],
         ],
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -178,8 +178,8 @@ const valuePosition = {
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 5, 0, 3, 0, 5, 0],
+            [0, 0, 0, -50, -50, -50, 0, 0],
+            [0, 0, 2, -50, 2, -50, 2, 0],
         ],
         [
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -208,11 +208,15 @@ export class Board {
     constructor(board, cb, rb, rp, cp) {
         this.board = board;
         this.rp = rp;
-        this.rb = rb;
+        this.rb = Array.from(rb);
         this.cp = cp;
         this.cb = cb;
         this.alreadyDone = [];
-        this.bestDepth = [0, 0, 0, 0];
+        let array = [];
+        for (let i = 0; i < 4; i++) {
+            array.push(undefined)
+        }
+        this.better = array
     }
     dangerous(board) {
         let counter = 0;
@@ -223,13 +227,21 @@ export class Board {
                 if (square === "b_w" || square === "k_w") counter += 3;
             }
         }
-        if (counter < 40) this.danger = 2;
+        if (counter <= 29) this.danger = 2;
         else this.danger = 0;
     }
+
     replace(move) {
         const { start, end, promotion, type } = move;
         let deleted = this.board[end[0]][end[1]];
-
+        if (type === "r" && start[1] === 0) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[0] = false;
+            else this.rp[0] = false;
+        }
+        if (type === "r" && start[1] === 7) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[1] = false;
+            else this.rp[1] = false;
+        }
         if (!promotion) {
             this.board[end[0]][end[1]] = this.board[start[0]][start[1]];
         } else {
@@ -249,9 +261,19 @@ export class Board {
                 this.board[move.end[0]][3] = this.board[move.end[0]][0];
                 this.board[move.end[0]][0] = "none";
             }
+            if (move.end[0] === 0) this.rb = [true, true];
+            else this.rp = [true, true];
+        }
+        if (type === "r" && start[1] === 0) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[0] = true;
+            else this.rp[0] = true;
+        }
+        if (type === "r" && start[1] === 7) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[1] = true;
+            else this.rp[1] = true;
         }
         this.dangerous(this.board);
-        return { deleted };
+        return deleted;
     }
     remove(move, deleted) {
         const { start, end, promotion, type } = move;
@@ -337,7 +359,6 @@ export class Board {
         } else {
             moves = recupAllCases(this.cp, 0, this.board, last, this.rp);
         }
-        console.log(king);
         for (const move of moves) {
             if (this.board[move[0]][move[1]] === king) return true;
         }
