@@ -267,8 +267,8 @@ export function getMovesAttack(c, board, last, r) {
         for (let x = 0; x < 8; x++) {
             if (board[y][x][2] === c) {
                 const type = board[y][x][0];
-                for (const square of possibleMoves[type](x, y, 0, c, board, last, r)) {
-                    if (board[square[0]][square[1]] !== "none") {
+                for (const square of possibleMoves[type](x, y, 1, c, board, last, r)) {
+                    if (board[square[0]][square[1]] !== "none" ) {
                         rep.push({
                             start: [y, x],
                             end: square,
@@ -307,7 +307,7 @@ export const getMoves = (c, board, lastMove, rock) => {
                             end: square,
                             type,
                             promotion: false,
-                            order: valuePieces[board[square[0]][square[1]][0]] - valuePieces[board[y][x][0]],
+                            order: valuePieces[board[square[0]][square[1]][0]],
                         });
                     }
                 }
@@ -315,7 +315,7 @@ export const getMoves = (c, board, lastMove, rock) => {
         }
     }
     // rep = trifusion(rep);
-    return rep;
+    return trifusion(rep);
 };
 
 export const recupAllCases = (c, params, board, lastMove, rock) => {

@@ -9,7 +9,6 @@ export function SearchEnd(last, alpha, beta, bool) {
     if (evaluation >= beta) return beta;
     alpha = Max(alpha, evaluation);
     const movesCaptures = board.generatorMovesCaptures(!bool, last);
-    console.log(movesCaptures);
     for (const move of movesCaptures) {
         const deleted = board.replace(move);
         evaluation = -SearchEnd([move.start[1], move.start[0], move.end[1], move.end[0], move.type], -beta, -alpha, !bool);
