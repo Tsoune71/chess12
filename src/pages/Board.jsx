@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { possibility, verifEndGame } from "../function/possibility";
-import { IAplay } from "../function/manager";
+import { possibility, verifEndGame } from "../assets/possibility";
+import { IAplay } from "../assets/Call";
 
 const Board = () => {
     const [howFinish, sethowFinish] = useState(undefined);
@@ -58,6 +58,16 @@ const Board = () => {
             ["p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w"],
             ["r_w", "k_w", "b_w", "q_w", "m_w", "b_w", "k_w", "r_w"],
         ];
+        // let board = [
+        //     ["none", "none", "none", "none", "none", "none", "m_b", "none"],
+        //     ["none", "none", "none", "none", "p_b", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "m_w", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        // ];
         function EndGameFCT(board, coupsScript, enemyColor, lastenmyMove) {
             const resVerif = verifEndGame(board, coupsScript, enemyColor, lastenmyMove);
             if (resVerif === 0) {

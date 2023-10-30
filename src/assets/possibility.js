@@ -1,3 +1,5 @@
+import { valuePieces } from "./Const";
+
 export const SquareIncheck = (coord, enemySquares) => {
     for (const e of enemySquares) {
         if (e[0] === undefined) console.log(e, "errror");
@@ -100,8 +102,6 @@ const possibleMoves = {
         return res;
     },
     k: (x, y, params, col, board, lastMove, rock) => {
-        let enemy = "b";
-        if (col === "b") enemy = "w";
         let res = [];
         let path = [
             [x + 2, y + 1],
@@ -241,21 +241,64 @@ const possibleMoves = {
     },
 };
 
+function fusion(a, b) {
+    let res = [];
+    for (let i = 0; i < a.length + b.length + 1; i++) {
+        if (a.length === 0) return res.concat(b);
+        if (b.length === 0) return res.concat(a);
+        if (a[0].order > b[0].order) {
+            res.push(a[0]);
+            a = a.slice(1);
+        } else {
+            res.push(b[0]);
+            b = b.slice(1);
+        }
+    }
+    return res;
+}
+
+function trifusion(arr) {
+    if (arr.length <= 1) return arr;
+    return fusion(trifusion(arr.slice(0, parseInt(arr.length / 2))), trifusion(arr.slice(parseInt(arr.length / 2))));
+}
+export function getMovesAttack(c, board, last, r) {
+    let rep = [];
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+            if (board[y][x][2] === c) {
+                const type = board[y][x][0];
+                for (const square of possibleMoves[type](x, y, 0, c, board, last, r)) {
+                    if (board[square[0]][square[1]] !== "none") {
+                        rep.push({
+                            start: [y, x],
+                            end: square,
+                            type,
+                            promotion: false,
+                            order: valuePieces[board[square[0]][square[1]][0]] - valuePieces[board[y][x][0]],
+                        });
+                    }
+                }
+            }
+        }
+    }
+    return trifusion(rep);
+}
+
 export const getMoves = (c, board, lastMove, rock) => {
     let rep = [];
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             if (board[y][x][2] === c) {
                 const type = board[y][x][0];
-                const possibility = possibleMoves[type](x, y, 1, c, board, lastMove, rock);
-                for (const square of possibility) {
-                    if ((square[0] === 0 || square[0] === 7) && type === "p") {
+                for (const square of possibleMoves[type](x, y, 1, c, board, lastMove, rock)) {
+                    if (type === "p" && (square[0] === 0 || square[0] === 7)) {
                         for (const piece of ["q", "k", "r", "b"]) {
                             rep.push({
                                 start: [y, x],
                                 end: square,
                                 type,
                                 promotion: `${piece}_${board[y][x][2]}`,
+                                order: valuePieces[piece] + valuePieces[board[square[0]][square[1]][0]],
                             });
                         }
                     } else {
@@ -264,12 +307,14 @@ export const getMoves = (c, board, lastMove, rock) => {
                             end: square,
                             type,
                             promotion: false,
+                            order: valuePieces[board[square[0]][square[1]][0]] - valuePieces[board[y][x][0]],
                         });
                     }
                 }
             }
         }
     }
+    // rep = trifusion(rep);
     return rep;
 };
 
@@ -282,6 +327,7 @@ export const recupAllCases = (c, params, board, lastMove, rock) => {
     }
     return rep;
 };
+
 export const findKing = (col, board) => {
     for (let a = 0; a < 8; a++) {
         for (let b = 0; b < 8; b++) {
@@ -316,7 +362,6 @@ export const kingInCheck = (color, enemy, board) => {
 export const verifEndGame = (board, coups, color, lastMove) => {
     const last6coups = coups.slice(coups.length - 6, coups.length);
     let res = 3;
-    console.log(last6coups);
     if (last6coups.length === 6) {
         if (
             last6coups[0][0] === last6coups[4][0] &&
