@@ -4,22 +4,16 @@ import { getMoves, recupAllCases, getMovesAttack } from "./possibility";
 export class Board {
     constructor(board, cb, rb, rp, cp) {
         this.board = board;
-        this.rp = rp;
+        this.rp = Array.from(rp);
         this.rb = Array.from(rb);
         this.cp = cp;
         this.cb = cb;
-        this.alreadyDone = [];
-        let array = [];
-        for (let i = 0; i < 4; i++) {
-            array.push(undefined);
-        }
-        this.better = array;
     }
     dangerous(board) {
         let counter = 0;
         for (const line of board) {
             for (const square of line) {
-                if (square === "r_w") counter += 10;
+                if (square === "r_w") counter += 13;
                 if (square === "q_w") counter += 30;
                 if (square === "b_w" || square === "k_w") counter += 3;
             }

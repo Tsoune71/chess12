@@ -2,7 +2,7 @@ import { Max } from "./Const";
 import { board } from "./Call";
 import { SearchEnd } from "./SearchEnd";
 
-export function Search(depth, last, alpha, beta) {
+export function Search(depth, last, alpha, beta, lastColor) {
     let color = "b";
     if (depth % 2 === 0) color = "w";
 
@@ -21,6 +21,9 @@ export function Search(depth, last, alpha, beta) {
         const deleted = board.replace(move);
         let evaluation = -Search(depth + 1, [move.start[1], move.start[0], move.end[1], move.end[0], move.type], -beta, -alpha);
         board.remove(move, deleted);
+        // if (board.danger === 2) {
+            
+        // }
         if (evaluation >= beta) return beta;
         alpha = Max(alpha, evaluation);
     }
