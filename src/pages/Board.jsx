@@ -48,26 +48,26 @@ const Board = () => {
         let possibil = [];
         let rock = [true, true];
         let rockIA = [true, true];
-        // let board = [
-        //     ["r_b", "k_b", "b_b", "q_b", "m_b", "b_b", "k_b", "r_b"],
-        //     ["p_b", "p_b", "p_b", "p_b", "p_b", "p_b", "p_b", "p_b"],
-        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w"],
-        //     ["r_w", "k_w", "b_w", "q_w", "m_w", "b_w", "k_w", "r_w"],
-        // ];
         let board = [
-            ["none", "none", "none", "none", "none", "none", "none", "none"],
-            ["none", "none", "none", "none", "p_b", "m_b", "none", "none"],
-            ["none", "none", "none", "m_w", "none", "none", "none", "none"],
-            ["none", "none", "none", "none", "none", "none", "none", "none"],
+            ["r_b", "k_b", "b_b", "q_b", "m_b", "b_b", "k_b", "r_b"],
+            ["p_b", "p_b", "p_b", "p_b", "p_b", "p_b", "p_b", "p_b"],
             ["none", "none", "none", "none", "none", "none", "none", "none"],
             ["none", "none", "none", "none", "none", "none", "none", "none"],
             ["none", "none", "none", "none", "none", "none", "none", "none"],
             ["none", "none", "none", "none", "none", "none", "none", "none"],
+            ["p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w", "p_w"],
+            ["r_w", "k_w", "b_w", "q_w", "m_w", "b_w", "k_w", "r_w"],
         ];
+        // let board = [
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "p_b", "m_b", "none", "none"],
+        //     ["none", "none", "none", "m_w", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        // ];
         function EndGameFCT(board, coupsScript, enemyColor, lastenmyMove) {
             const resVerif = verifEndGame(board, coupsScript, enemyColor, lastenmyMove);
             if (resVerif === 0) {
