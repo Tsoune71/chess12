@@ -1,4 +1,4 @@
-import { valuePieces, valuePosition } from "./Const";
+import { Abs, pieceToBin, valuePieces, valuePosition } from "./Const";
 import { getMoves, recupAllCases, getMovesAttack } from "./possibility";
 
 export class Board {
@@ -55,14 +55,6 @@ export class Board {
             if (move.end[0] === 0) this.rb = [true, true];
             else this.rp = [true, true];
         }
-        if (type === "r" && start[1] === 0) {
-            if (this.board[start[0]][start[1]][2] === "b") this.rb[0] = true;
-            else this.rp[0] = true;
-        }
-        if (type === "r" && start[1] === 7) {
-            if (this.board[start[0]][start[1]][2] === "b") this.rb[1] = true;
-            else this.rp[1] = true;
-        }
         this.dangerous(this.board);
         return deleted;
     }
@@ -93,6 +85,14 @@ export class Board {
                 this.board[end[0]][0] = this.board[end[0]][3];
                 this.board[end[0]][3] = "none";
             }
+        }
+        if (type === "r" && start[1] === 0) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[0] = true;
+            else this.rp[0] = true;
+        }
+        if (type === "r" && start[1] === 7) {
+            if (this.board[start[0]][start[1]][2] === "b") this.rb[1] = true;
+            else this.rp[1] = true;
         }
     }
 
@@ -139,7 +139,7 @@ export class Board {
         return false;
     }
 
-    distanceBetweenKing() {
+    distanceKings() {
         let first = [0, 0];
         let second = [7, 7];
         for (let y = 0; y < 8; y++) {
@@ -148,6 +148,22 @@ export class Board {
                 if (this.board[y][x] === "m_w") second = [x, y];
             }
         }
-        return 14 - ((first[0] - second[0]) ** 2) ** 0.5 + ((first[1] - second[1]) ** 2) ** 0.5;
+        return 14 - parseInt(Abs(first[0] - second[0]) + Abs(first[1] - second[1]));
+    }
+    kingsCloser(color) {
+        let first = [];
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                if (this.board[y][x] === `m_${color}`) first = [x, y];
+            }
+        }
+        let leftRight = 7;
+        let topBottom = 7;
+        if (first[0] < 4) leftRight = 0;
+        if (first[1] < 4) topBottom = 0;
+        let distX = Abs(first[0] - leftRight)
+        let distY = Abs(first[1] - topBottom)
+        if (distX !== 0) return distX
+        return distY
     }
 }

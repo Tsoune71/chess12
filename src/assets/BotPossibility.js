@@ -1,20 +1,9 @@
-import { valuePieces } from "./Const";
-
-export const SquareIncheck = (coord, enemySquares) => {
-    for (const e of enemySquares) if (coord[0] === e[0] && coord[1] === e[1]) return false;
-    return true;
-};
-const possibleMoves = {
-    p: (x, y, params, col, board, lastMove, rock) => {
-        let enemy = "b";
-        if (col === "b") enemy = "w";
+const Routeur = {
+    1: (x, y, params, board, lastMove, rock) => {
         let res = [];
-        let add = 1;
-        let size = 1;
-        if (col === "w") {
-            add = -1;
-            size = 6;
-        }
+        const add = -1;
+        const size = 6;
+
         if (lastMove.length !== 0 && params !== 0) {
             let aX = lastMove[0];
             let bX = lastMove[2];
@@ -22,7 +11,7 @@ const possibleMoves = {
             let bY = lastMove[3];
             let aY = lastMove[1];
             let ponto = board[bY][bX];
-            board[bY][bX] = "none";
+            board[bY][bX] = 0b0000;
             if (((aX - x) ** 2) ** 0.5 === 1 && lastMove[4] === "p" && aX === bX && ((bY - aY) ** 2) ** 0.5 === 2 && bY === y && squareRemoveCheck(x, y, bX, bY + add, col, board, lastMove, rock)) {
                 res.push([bY + add, bX, [bX, bY]]);
             }
@@ -236,171 +225,4 @@ const possibleMoves = {
         }
         return res;
     },
-};
-
-function fusion(a, b) {
-    let c = a.length + b.length;
-    let res = [];
-    for (let i = 0; i < c; i++) {
-        if (a.length === 0) {
-            res = res.concat(b);
-            return res;
-        }
-        if (b.length === 0) {
-            res = res.concat(a);
-            return res;
-        }
-        if (a[0].order > b[0].order) {
-            res.push(a[0]);
-            a = a.slice(1);
-        } else {
-            res.push(b[0]);
-            b = b.slice(1);
-        }
-    }
-    return res;
-}
-
-function trifusion(arr) {
-    if (arr.length <= 1) return arr;
-    return fusion(trifusion(arr.slice(0, parseInt(arr.length / 2))), trifusion(arr.slice(parseInt(arr.length / 2))));
-}
-
-export function getMovesAttack(c, board, last, r) {
-    let rep = [];
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            if (board[y][x][2] === c) {
-                const type = board[y][x][0];
-                for (const square of possibleMoves[type](x, y, 1, c, board, last, r)) {
-                    if (board[square[0]][square[1]] !== "none") {
-                        rep.push({
-                            start: [y, x],
-                            end: square,
-                            type,
-                            promotion: false,
-                            order: valuePieces[board[square[0]][square[1]][0]] - valuePieces[type],
-                        });
-                    }
-                }
-            }
-        }
-    }
-    return rep;
-}
-
-export const getMoves = (c, board, lastMove, rock) => {
-    let enemy = "b";
-    if (c === "b") enemy = "b";
-    let rep = [];
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            if (board[y][x][2] === c) {
-                const type = board[y][x][0];
-                for (const square of possibleMoves[type](x, y, 1, c, board, lastMove, rock)) {
-                    let order = 0;
-                    let start2 = board[square[0]][square[1]];
-                    board[square[0]][square[1]] = board[y][x];
-                    board[y][x] = "none";
-                    // if (!SquareIncheck(findKing(enemy, board), recupAllCases(c, 1, board, lastMove, rock))) order = 1000;
-                    board[y][x] = board[square[0]][square[1]];
-                    board[square[0]][square[1]] = start2;
-
-                    if (type === "p" && (square[0] === 0 || square[0] === 7)) {
-                        for (const piece of ["q", "k", "r", "b"]) {
-                            rep.push({
-                                start: [y, x],
-                                end: square,
-                                type,
-                                promotion: `${piece}_${board[y][x][2]}`,
-                                order: order + valuePieces[piece] + valuePieces[board[square[0]][square[1]][0]],
-                            });
-                        }
-                    } else {
-                        rep.push({
-                            start: [y, x],
-                            end: square,
-                            type,
-                            promotion: false,
-                            order: order + valuePieces[board[square[0]][square[1]][0]] - valuePieces[type],
-                        });
-                    }
-                }
-            }
-        }
-    }
-    return trifusion(rep);
-};
-
-export const recupAllCases = (c, params, board, lastMove, rock) => {
-    let rep = [];
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            if (board[y][x][2] === c) rep = rep.concat(possibleMoves[board[y][x][0]](x, y, params, c, board, lastMove, rock));
-        }
-    }
-    return rep;
-};
-
-export const findKing = (col, board) => {
-    for (let a = 0; a < 8; a++) {
-        for (let b = 0; b < 8; b++) {
-            if (board[b][a] === `m_${col}`) return [b, a];
-        }
-    }
-};
-const leaveBOARD = (x, y) => {
-    if (x < 0 || x > 7 || y < 0 || y > 7) return false;
-    else return true;
-};
-const squareRemoveCheck = (x, y, xx, yy, col, board, lastMove, rock) => {
-    if (board[yy][xx][0] === "m") return false;
-    let enemy = "b";
-    if (col === "b") enemy = "w";
-    let start2 = board[yy][xx];
-    board[yy][xx] = board[y][x];
-    board[y][x] = "none";
-    let res = SquareIncheck(findKing(col, board), recupAllCases(enemy, 0, board, lastMove, rock));
-    board[y][x] = board[yy][xx];
-    board[yy][xx] = start2;
-    return res;
-};
-export const possibility = (x, y, typePiece, color, board, params, lastMove, rock) => {
-    return possibleMoves[typePiece](x, y, params, color, board, lastMove, rock);
-};
-
-export const kingInCheck = (color, enemy, board) => {
-    return SquareIncheck(findKing(enemy, board), recupAllCases(color, 0, board, [], [false]));
-};
-
-export const verifEndGame = (board, coups, color, lastMove) => {
-    const last6coups = coups.slice(coups.length - 6, coups.length);
-    let res = 3;
-    if (last6coups.length === 6) {
-        if (
-            last6coups[0][0] === last6coups[4][0] &&
-            last6coups[0][1] === last6coups[4][1] &&
-            last6coups[0][2] === last6coups[4][2] &&
-            last6coups[0][3] === last6coups[4][3] &&
-            last6coups[1][0] === last6coups[5][0] &&
-            last6coups[1][1] === last6coups[5][1] &&
-            last6coups[1][2] === last6coups[5][2] &&
-            last6coups[1][3] === last6coups[5][3] &&
-            last6coups[1][0] === last6coups[3][2] &&
-            last6coups[1][1] === last6coups[3][3] &&
-            last6coups[1][2] === last6coups[3][0] &&
-            last6coups[1][3] === last6coups[3][1]
-        )
-            return 2;
-    }
-
-    let enemy = "b";
-    if (color === "b") enemy = "w";
-    const enemySquares = recupAllCases(enemy, 0, board, [], [false, false]);
-    const Squares = recupAllCases(color, 1, board, lastMove, [false, false]);
-    if (Squares.length === 0) {
-        if (SquareIncheck(findKing(color, board), enemySquares)) res = 1;
-        else res = 0;
-    }
-    return res;
 };

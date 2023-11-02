@@ -1,4 +1,4 @@
-import { Max } from "./Const";
+import { Max, kingEnGame } from "./Const";
 import { board } from "./Call";
 import { SearchEnd } from "./SearchEnd";
 
@@ -20,10 +20,9 @@ export function Search(depth, last, alpha, beta, lastColor) {
     for (const move of moves) {
         const deleted = board.replace(move);
         let evaluation = -Search(depth + 1, [move.start[1], move.start[0], move.end[1], move.end[0], move.type], -beta, -alpha);
+        if (board.danger === 2 && move.type === "m" && board.value(color) <= 400 && depth === 0) evaluation += board.kingsCloser(color);
         board.remove(move, deleted);
-        // if (board.danger === 2) {
-            
-        // }
+
         if (evaluation >= beta) return beta;
         alpha = Max(alpha, evaluation);
     }

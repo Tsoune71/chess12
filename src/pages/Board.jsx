@@ -60,13 +60,13 @@ const Board = () => {
         ];
         // let board = [
         //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["none", "none", "none", "none", "p_b", "m_b", "none", "none"],
-        //     ["none", "none", "none", "m_w", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "m_w", "p_w", "none"],
         //     ["none", "none", "none", "none", "none", "none", "none", "none"],
         //     ["none", "none", "none", "none", "none", "none", "none", "none"],
         //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "q_b", "none"],
         //     ["none", "none", "none", "none", "none", "none", "none", "none"],
-        //     ["none", "none", "none", "none", "none", "none", "none", "none"],
+        //     ["none", "none", "none", "none", "none", "none", "none", "m_b"],
         // ];
         function EndGameFCT(board, coupsScript, enemyColor, lastenmyMove) {
             const resVerif = verifEndGame(board, coupsScript, enemyColor, lastenmyMove);
