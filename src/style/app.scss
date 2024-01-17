@@ -1,7 +1,7 @@
 .contentBoard {
     position: absolute;
     height: 100%;
-    width: calc((100vh - 60px));
+    width: calc((100vh - 100px));
     left: 50%;
     transform: translate(-50%, 0%);
     overflow: hidden;
@@ -14,8 +14,8 @@
     border-radius: 10px;
     cursor: grab;
     div {
-        width: calc((100vh - 60px) / 8);
-        height: calc((100vh - 60px) / 8);
+        width: calc((100vh - 100px) / 8);
+        height: calc((100vh - 100px) / 8);
         background-size: 100%;
         background-repeat: no-repeat;
         pointer-events: visible;
@@ -136,7 +136,7 @@
 }
 .mid {
     width: 100%;
-    height: calc(100% - 60px);
+    height: calc(100% - 100px);
     position: relative;
     left: 0;
     top: 0;

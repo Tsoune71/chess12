@@ -1,6 +1,5 @@
 import {
     Abs,
-    Max,
     knightSquares,
     pieV,
     posV,
@@ -19,6 +18,7 @@ import {
 export class BoardCLASS {
     constructor(b) {
         this.board = b;
+        this.max = 0;
         this.rock = [
             [0, 0],
             [0, 0],
@@ -114,7 +114,7 @@ export class BoardCLASS {
                 for (let coef = 1; coef < range + 1; coef++) {
                     let square = i + ind * coef;
                     const type = this.board[square];
-                    if (!type || type % 2 !== color) {
+                    if (type === 0 || type % 2 !== color) {
                         if (this.isVerif(i, square)) res.push(square);
                         if (type && type % 2 !== color) break;
                     } else break;
@@ -123,7 +123,7 @@ export class BoardCLASS {
             return res;
         }
         if (isKing(type)) {
-            if (!this.isSquareInCheck(this.coordKings[color], color)) {
+            if ((this.rock[color][0] === 0 || this.rock[color][1] === 0) && !this.isSquareInCheck(this.coordKings[color], color)) {
                 if (
                     !this.rock[color][0] &&
                     this.board[y * 8] === 8 - color &&
@@ -235,11 +235,15 @@ export class BoardCLASS {
                 for (let coef = 1; coef < range + 1; coef++) {
                     const square = i + ind * coef;
                     const type = this.board[square];
-                    if (!type || type % 2 !== color) {
+                    if (type === 0 || type % 2 !== color) {
                         if (type && type % 2 !== color) {
                             if (this.isVerif(i, square)) res.push(square);
                             break;
-                        }
+                        } else if (
+                            (this.AttackByBishop(square, color) || this.AttackByRock(square, color)) &&
+                            this.isVerif(i, square)
+                        )
+                            res.push(square);
                     } else break;
                 }
             }
@@ -247,7 +251,7 @@ export class BoardCLASS {
         }
         if (isKing(type)) {
             for (const ind of kingSquares(i))
-                if ((this.board[ind] === 0 || this.board[ind] % 2 !== color) && this.isVerif(i, ind)) res.push(ind);
+                if (this.board[ind] !== 0 && this.board[ind] % 2 !== color && this.isVerif(i, ind)) res.push(ind);
         }
         return res;
     }
@@ -268,7 +272,6 @@ export class BoardCLASS {
         const x = i % 8;
         const y = parseInt(i / 8);
         for (const ind of knightSquares(i)) if (this.board[ind] === 3 + color) return true;
-
         for (const [ind, range] of [
             [-9, Min(x, y)],
             [-7, Min(7 - x, y)],
@@ -367,9 +370,9 @@ export class BoardCLASS {
             const p = this.board[i];
             if (p && p % 2 === c)
                 for (const ind of this.LegalMove(i)) {
-                    if (isPawn(p) && (ind < 8 || ind > 55)) {
+                    if (isPawn(p) && (ind < 8 || ind > 55))
                         for (const pro of [10, 4, 8, 6]) r.push([i, ind, pro - c, pieceOrders[pro]]);
-                    } else {
+                    else {
                         let t = ind;
                         let t2 = i;
                         if (c) {
@@ -389,70 +392,21 @@ export class BoardCLASS {
         }
         return triFusion(r);
     }
-    Search(depth, color, alpha, beta) {
-        if (this.VerifRep()) return 0;
-        if (!depth) return this.SearchCapture(color, alpha, beta);
-        const moves = this.GeneratorMove(color);
-        for (const [i, ind, p] of moves) {
-            this.makeMove(i, ind, p);
-            let e = -this.Search(depth - 1, +!color, -beta, -alpha);
-            if (p) e -= depth
-            this.removeMove(p);
-            if (e >= beta) return beta;
-            alpha = Max(e, alpha);
-        }
-        if (!moves.length) {
-            if (this.isSquareInCheck(this.coordKings[color], color)) return -100000 - depth;
-            return 0;
-        }
-        return alpha;
-    }
     GeneratorCapture(c) {
         let r = [];
         for (let i = 0; i < 64; i++) {
             const p = this.board[i];
             if (p && p % 2 === c) {
-                const score = pieceOrders[p];
                 for (const ind of this.CaptureMove(i)) {
+                    //Mange Promotion
                     if (isPawn(p) && (ind < 8 || ind > 55))
-                        for (const pro of [10, 4, 8, 6]) r.push([i, ind, pro - c, pieceOrders[pro] - score]);
+                        for (const pro of [10, 4, 8, 6]) r.push([i, ind, pro - c, pieceOrders[pro] - pieceOrders[p]]);
+                    //other Capture
                     else r.push([i, ind, undefined, pieceOrders[this.board[ind]]]);
                 }
             }
         }
         return triFusion(r);
-    }
-    Eval(c) {
-        let r = 0;
-        for (let i = 0; i < 64; i++) {
-            const p = this.board[i];
-            if (p) {
-                const t = parseInt((p - 1) / 2);
-                if (p % 2) r -= posV[t][this.gameValue][(7 - parseInt(i / 8)) * 8 + (i % 8)] + pieV[t];
-                else r += posV[t][this.gameValue][i] + pieV[t];
-            }
-        }
-        if (c) return -r;
-        return r;
-    }
-    SearchCapture(color, alpha, beta) {
-        let t = this.Eval(color);
-        if (t >= beta) return beta;
-        alpha = Max(t, alpha);
-        const moves = this.GeneratorCapture(color);
-        for (const [i, ind, p] of moves) {
-            this.makeMove(i, ind, p);
-            let e = -this.SearchCapture(+!color, -beta, -alpha);
-            this.removeMove(p);
-            if (e >= beta) return beta;
-            alpha = Max(e, alpha);
-        }
-        return alpha;
-    }
-    ScoreColor(color) {
-        let r = 0;
-        for (const p of this.board) if (p !== 0 && !isPawn(p) && p % 2 === color) r += pieV[parseInt((p - 1) / 2)];
-        return r;
     }
     VerifRep() {
         const length = this.movesMake.length;
@@ -480,31 +434,18 @@ export class BoardCLASS {
             s4 === e2
         );
     }
-    Start(color, depth) {
-        let r = undefined;
-        let best = -Infinity;
-        this.already = [];
-        if (!this.gameValue && this.ScoreColor(+!color) < 1500) this.gameValue = 1;
-        for (const [i, ind, p] of this.GeneratorMove(color)) {
-            this.makeMove(i, ind, p);
-            let evaluation = -this.Search(depth, +!color, -Infinity, Infinity);
-            this.removeMove(p);
-            if (evaluation >= best) {
-                best = evaluation;
-                r = [i, ind, p];
-            }
-        }
+    ScoreColorForEndGame(color) {
+        let r = 0;
+        for (const p of this.board) if (p !== 0 && !isPawn(p) && p % 2 === color) r += pieV[parseInt((p - 1) / 2)];
         return r;
     }
-    GameFinish () {
-        for (const color of [0,1]) {
-            const moves = this.GeneratorMove(color)
-            if (!moves.length) {
-                if (this.isSquareInCheck(this.coordKings[color],color)) return 'Echec et Mat'
-                return 'Nule par pat'
-            }
-            if (this.VerifRep()) return 'Nule par répétition'
+    GameFinish(color) {
+        const moves = this.GeneratorMove(color);
+        if (!moves.length) {
+            if (this.isSquareInCheck(this.coordKings[color], color)) return "Echec et Mat";
+            return "Nule par pat";
         }
-        return undefined
+        if (this.VerifRep()) return "Nule par répétition";
+        return undefined;
     }
 }

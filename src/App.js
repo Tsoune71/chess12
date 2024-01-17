@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { BoardCLASS } from "./assets/Board";
+import "./assets/Search"
+import "./assets/EvalBoard"
+import "./assets/SearchAfter"
+import "./assets/Start"
+import "./assets/AttackByPiece"
 import { isPawn } from "./assets/Const";
 
 const App = () => {
@@ -26,6 +31,7 @@ const App = () => {
     const [Color, setColor] = useState(0);
 
     useEffect(() => {
+        sethowFinish('')
         const colorBoard = ["rgb(221, 201, 176)", "rgb(127, 89, 0)"]; //  black / white
         for (let i = 0; i < 64; i++) {
             let child = document.createElement("div");
@@ -54,99 +60,53 @@ const App = () => {
         let indexEnd = -1;
         let boxes = zz(".chessboard").childNodes;
         let moves = [];
+    // Original Board
+    
 
-        // [
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,empty,
-        //     pawn_white,empty,empty,empty,empty,king_black,empty,empty,
-        //     empty,empty,empty,empty,empty,empty,empty,king_white,
-        // ]
+
+
+    //Probleme big Mistake
+    // [
+    //     empty,empty,queen_white,empty,empty,empty,empty,empty,
+    //     empty,empty,empty,empty,empty,pawn_black,king_black,empty,
+    //     pawn_black,empty,empty,empty,empty,empty,empty,pawn_black,
+    //     empty,empty,pawn_black,empty,queen_black,empty,pawn_black,empty,
+    //     empty,empty,pawn_white,empty,empty,empty,pawn_white,empty,
+    //     empty,pawn_white,empty,pawn_black,empty,empty,empty,pawn_white,
+    //     pawn_white,empty,empty,bishop_white,rock_black,pawn_white,empty,empty,
+    //     empty,empty,empty,rock_white,empty,empty,king_white,empty,
+    // ]
+    
+    
         const Board = new BoardCLASS([
-            rock_black,
-            knight_black,
-            bishop_black,
-            queen_black,
-            king_black,
-            bishop_black,
-            knight_black,
-            rock_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            pawn_black,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            empty,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            pawn_white,
-            rock_white,
-            knight_white,
-            bishop_white,
-            queen_white,
-            king_white,
-            bishop_white,
-            knight_white,
-            rock_white,
+            rock_black,knight_black,bishop_black,queen_black,king_black,bishop_black,knight_black,rock_black,
+            pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,
+            empty,empty,empty,empty,empty,empty,empty,empty,
+            empty,empty,empty,empty,empty,empty,empty,empty,
+            empty,empty,empty,empty,empty,empty,empty,empty,
+            empty,empty,empty,empty,empty,empty,empty,empty,
+            pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,
+            rock_white,knight_white,bishop_white,queen_white,king_white,bishop_white,knight_white,rock_white,
         ]);
         if (Color) {
             zz(".chessboard").style.rotate = "180deg";
             for (const sqare of boxes) sqare.style.rotate = "180deg";
             setTimeout(() => {
-                BotToPlay();
+                BotToPlay((Color + 1) % 2);
             }, 1000);
         } else zz(".chessboard").style.rotate = "0deg";
-        function BotToPlay() {
+        function BotToPlay(color) {
+            zz("#videSon").play()
+            const response = Board.GameFinish((Color + 1) % 2)
+            sethowFinish(response);
             youCanPlay = false;
-            setinfo('...........................')
-            setTimeout(() => {
+            if (!response) {
+                setTimeout(() => {
                 let depth = 3;
                 let t = Date.now();
                 let move = undefined;
                 while (Date.now() < t + 500) {
-                    move = Board.Start((Color + 1) % 2, depth);
+                    move = Board.Start(color, depth);
                     setinfo(`depth = ${depth + 1} in ${Date.now() - t} ms`);
                     depth++;
                 }
@@ -159,10 +119,17 @@ const App = () => {
                     boxes[ind].classList.add("casePlay");
                     Board.makeMove(i, ind, p);
                     youCanPlay = true;
+                    
                     laodPieces();
+                    // BotToPlay((color + 1) % 2)
                 }
-                sethowFinish(Board.GameFinish());
+                setTimeout(() => {
+                    zz("#videSon").play();
+                }, 10);
+                sethowFinish(Board.GameFinish(Color));
             }, 50);
+            }
+            
         }
         const mouseDown = (e) => {
             e.preventDefault();
@@ -185,7 +152,6 @@ const App = () => {
                 indexEnd = +e.target.getAttribute("index");
                 boxes.forEach((e) => {
                     e.classList.remove("casepossible");
-                    e.classList.remove("casePlay");
                     e.style.boxShadow = "";
                 });
                 for (const i of moves) {
@@ -194,10 +160,13 @@ const App = () => {
                             zz(".promotion").style.display = "block";
                             zz(".promotion").style.left = `calc(((100%) / 8)*${i % 8})`;
                         } else {
+                            boxes.forEach((e) => {
+                                e.classList.remove("casePlay");
+                            });
                             boxes[i].classList.add("casePlay");
                             boxes[indexStart].classList.add("casePlay");
                             Board.makeMove(indexStart, i);
-                            BotToPlay();
+                            BotToPlay((Color + 1) % 2);
                         }
                     }
                 }
@@ -216,7 +185,7 @@ const App = () => {
             zz(".promotion").style.display = "none";
             Board.makeMove(indexStart, indexEnd, +event.target.getAttribute("typ") - Color);
             laodPieces();
-            BotToPlay();
+            BotToPlay((Color + 1) % 2);
         }
         const domImgPro = document.querySelectorAll(".imgpromotions");
         const domBoard = zz(".chessboard");
