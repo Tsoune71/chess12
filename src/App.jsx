@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { BoardCLASS } from "./assets/Board";
-import "./assets/Search"
-import "./assets/EvalBoard"
-import "./assets/SearchAfter"
-import "./assets/Start"
-import "./assets/AttackByPiece"
+import "./assets/Search";
+import "./assets/EvalBoard";
+import "./assets/SearchAfter";
+import "./assets/Start";
+import "./assets/generator/GeneratorCapture";
+import "./assets/generator/GeneratorMove";
 import { isPawn } from "./assets/Const";
 
 const App = () => {
@@ -31,7 +32,7 @@ const App = () => {
     const [Color, setColor] = useState(0);
 
     useEffect(() => {
-        sethowFinish('')
+        sethowFinish("");
         const colorBoard = ["rgb(221, 201, 176)", "rgb(127, 89, 0)"]; //  black / white
         for (let i = 0; i < 64; i++) {
             let child = document.createElement("div");
@@ -59,25 +60,33 @@ const App = () => {
         let indexStart = -1;
         let indexEnd = -1;
         let boxes = zz(".chessboard").childNodes;
+        let indexReview = 0;
         let moves = [];
-    // Original Board
-    
+        // Original Board
+        // [
+        //     rock_black,knight_black,bishop_black,queen_black,king_black,bishop_black,knight_black,rock_black,
+        //     pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,
+        //     empty,empty,empty,empty,empty,empty,empty,empty,
+        //     empty,empty,empty,empty,empty,empty,empty,empty,
+        //     empty,empty,empty,empty,empty,empty,empty,empty,
+        //     empty,empty,empty,empty,empty,empty,empty,empty,
+        //     pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,
+        //     rock_white,knight_white,bishop_white,queen_white,king_white,bishop_white,knight_white,rock_white,
+        // ]
 
-
-
-    //Probleme big Mistake
-    // [
-    //     empty,empty,queen_white,empty,empty,empty,empty,empty,
-    //     empty,empty,empty,empty,empty,pawn_black,king_black,empty,
-    //     pawn_black,empty,empty,empty,empty,empty,empty,pawn_black,
-    //     empty,empty,pawn_black,empty,queen_black,empty,pawn_black,empty,
-    //     empty,empty,pawn_white,empty,empty,empty,pawn_white,empty,
-    //     empty,pawn_white,empty,pawn_black,empty,empty,empty,pawn_white,
-    //     pawn_white,empty,empty,bishop_white,rock_black,pawn_white,empty,empty,
-    //     empty,empty,empty,rock_white,empty,empty,king_white,empty,
-    // ]
-    
-    
+        //Probleme big Mistake
+        // [
+        //     empty,empty,queen_white,empty,empty,empty,empty,empty,
+        //     empty,empty,empty,empty,empty,pawn_black,king_black,empty,
+        //     pawn_black,empty,empty,empty,empty,empty,empty,pawn_black,
+        //     empty,empty,pawn_black,empty,queen_black,empty,pawn_black,empty,
+        //     empty,empty,pawn_white,empty,empty,empty,pawn_white,empty,
+        //     empty,pawn_white,empty,pawn_black,empty,empty,empty,pawn_white,
+        //     pawn_white,empty,empty,bishop_white,rock_black,pawn_white,empty,empty,
+        //     empty,empty,empty,rock_white,empty,empty,king_white,empty,
+        // ]
+        
+        
         const Board = new BoardCLASS([
             rock_black,knight_black,bishop_black,queen_black,king_black,bishop_black,knight_black,rock_black,
             pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,pawn_black,
@@ -88,6 +97,7 @@ const App = () => {
             pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,pawn_white,
             rock_white,knight_white,bishop_white,queen_white,king_white,bishop_white,knight_white,rock_white,
         ]);
+        let compteur  = 0
         if (Color) {
             zz(".chessboard").style.rotate = "180deg";
             for (const sqare of boxes) sqare.style.rotate = "180deg";
@@ -96,40 +106,41 @@ const App = () => {
             }, 1000);
         } else zz(".chessboard").style.rotate = "0deg";
         function BotToPlay(color) {
-            zz("#videSon").play()
-            const response = Board.GameFinish((Color + 1) % 2)
+            let best = Board.GeneratorMove(color)
+            compteur ++
+            indexReview++;
+            zz("#videSon").play();
+            const response = Board.GameFinish((Color + 1) % 2);
             sethowFinish(response);
             youCanPlay = false;
             if (!response) {
                 setTimeout(() => {
-                let depth = 3;
-                let t = Date.now();
-                let move = undefined;
-                while (Date.now() < t + 500) {
-                    move = Board.Start(color, depth);
-                    setinfo(`depth = ${depth + 1} in ${Date.now() - t} ms`);
-                    depth++;
-                }
-                boxes.forEach((e) => {
-                    e.classList.remove("casePlay");
-                });
-                if (move) {
-                    const [i, ind, p] = move;
-                    boxes[i].classList.add("casePlay");
-                    boxes[ind].classList.add("casePlay");
-                    Board.makeMove(i, ind, p);
-                    youCanPlay = true;
-                    
-                    laodPieces();
-                    // BotToPlay((color + 1) % 2)
-                }
-                setTimeout(() => {
-                    zz("#videSon").play();
-                }, 10);
-                sethowFinish(Board.GameFinish(Color));
-            }, 50);
+                    let depth = 4;
+                    let t = Date.now();
+                    let move = undefined;
+                    while (Date.now() < t + 1520) {
+                        move = Board.Start(color, depth ,best);
+                        setinfo(`depth = ${depth + 1} in ${Date.now() - t} ms / ${compteur}`);
+                        depth++;
+                    }
+                    boxes.forEach((e) => {
+                        e.classList.remove("casePlay");
+                    });
+                    if (move) {
+                        boxes[move.i].classList.add("casePlay");
+                        boxes[move.ind].classList.add("casePlay");
+                        Board.MakeMove(move);
+                        youCanPlay = true;
+                        indexReview++;
+                        laodPieces();
+                        // BotToPlay(+!color)
+                    }
+                    setTimeout(() => {
+                        zz("#videSon").play();
+                    }, 1);
+                    sethowFinish(Board.GameFinish(Color));
+                }, 50);
             }
-            
         }
         const mouseDown = (e) => {
             e.preventDefault();
@@ -142,18 +153,24 @@ const App = () => {
                 boxes.forEach((e) => {
                     e.classList.remove("rightClickOnboard");
                 });
-                moves = Board.LegalMove(indexStart);
+                moves = [];
+                const response = Board.LegalMove(indexStart);
+                const length = response.length;
+                for (let i = 0; i < length; i++) {
+                    moves.push(response.pop());
+                }
+                if (Color !== Board.board[indexStart] % 2) moves = [];
                 // if (color !== yourColor) moves = [];
                 for (const i of moves) boxes[i].classList.add("casepossible");
             }
         };
         const mouseUp = (e) => {
+            boxes.forEach((e) => {
+                e.classList.remove("casepossible");
+                e.style.boxShadow = "";
+            });
             if (e.button === 0 && e.target.getAttribute("index") !== null && indexStart !== -1) {
                 indexEnd = +e.target.getAttribute("index");
-                boxes.forEach((e) => {
-                    e.classList.remove("casepossible");
-                    e.style.boxShadow = "";
-                });
                 for (const i of moves) {
                     if (i === indexEnd && youCanPlay) {
                         if ((parseInt(i / 8) === 0 || parseInt(i / 8) === 7) && isPawn(Board.board[indexStart])) {
@@ -165,15 +182,15 @@ const App = () => {
                             });
                             boxes[i].classList.add("casePlay");
                             boxes[indexStart].classList.add("casePlay");
-                            Board.makeMove(indexStart, i);
+                            Board.MakeMove({ i: indexStart, ind: i, p: undefined, deleted: Board.board[i] });
                             BotToPlay((Color + 1) % 2);
                         }
                     }
                 }
-                laodPieces();
-                zz(".cursor").style.display = "none";
-                zz(".chessboard").style.cursor = "grab";
             }
+            laodPieces();
+            zz(".cursor").style.display = "none";
+            zz(".chessboard").style.cursor = "grab";
             moves = [];
         };
         function laodPieces() {
@@ -183,19 +200,41 @@ const App = () => {
         laodPieces();
         function Promotion(event) {
             zz(".promotion").style.display = "none";
-            Board.makeMove(indexStart, indexEnd, +event.target.getAttribute("typ") - Color);
+            Board.MakeMove({
+                i: indexStart,
+                ind: indexEnd,
+                deleted: Board.board[indexEnd],
+                p: +event.target.getAttribute("typ") - Color,
+            });
             laodPieces();
             BotToPlay((Color + 1) % 2);
         }
+        function Param(event) {
+            const param = parseInt(event.target.getAttribute("param"));
+            if (param === -1 && indexReview > 1) {
+                indexReview--;
+                Board.removeMove(undefined, Board.movesMake[indexReview]);
+            }
+            if (param === 1 && indexReview < Board.movesMake.length - 1) {
+                const [a, b, c] = Board.movesMake[indexReview];
+                indexReview++;
+                Board.makeMove(a, b, c);
+                Board.movesMake.pop();
+            }
+            laodPieces();
+        }
         const domImgPro = document.querySelectorAll(".imgpromotions");
+        const domParam = document.querySelectorAll(".param");
         const domBoard = zz(".chessboard");
         window.addEventListener("mouseup", mouseUp);
         domBoard.addEventListener("mousedown", mouseDown);
         domBoard.addEventListener("mousemove", mouseMove);
         for (const p of domImgPro) p.addEventListener("click", Promotion);
+        for (const p of domParam) p.addEventListener("click", Param);
         return () => {
             while (domBoard.firstChild) domBoard.removeChild(domBoard.firstChild);
             for (const p of domImgPro) p.removeEventListener("click", Promotion);
+            for (const p of domParam) p.removeEventListener("click", Param);
             window.removeEventListener("mouseup", mouseUp);
             domBoard.removeEventListener("mousedown", mouseDown);
             domBoard.removeEventListener("mousemove", mouseMove);
@@ -209,6 +248,7 @@ const App = () => {
                     <button
                         onClick={() => {
                             setColor((prev) => +!prev);
+                            // test()
                         }}
                     >
                         ABANDONNER
@@ -227,7 +267,6 @@ const App = () => {
                     </div>
                 </div>
             </div>
-
             <div className="cursor"></div>
         </>
     );

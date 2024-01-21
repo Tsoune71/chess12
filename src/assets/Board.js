@@ -29,6 +29,18 @@ export class BoardCLASS {
         this.already = [];
         for (let j = 0; j < 64; j++) if (isKing(this.board[j])) this.coordKings[this.board[j] % 2] = j;
     }
+    EnPassant(indice) {
+        const { i, ind, deleted } = this.movesMake[this.movesMake.length - 1];
+        if (
+            deleted === 0 &&
+            isPawn(this.board[ind]) &&
+            parseInt(ind / 8) === parseInt(indice / 8) &&
+            Abs(parseInt(ind / 8) - parseInt(i / 8)) === 2 &&
+            Abs((indice % 8) - (ind % 8)) === 1
+        )
+            return ind;
+        return false;
+    }
     LegalMove(i) {
         let res = [];
         const type = this.board[i];
@@ -50,15 +62,8 @@ export class BoardCLASS {
                 const top2 = i + sens * 2;
                 if ((y === 1 || y === 6) && this.board[top2] === 0 && this.isVerif(i, top2)) res.push(top2);
             }
-            const [start, end, take] = this.movesMake[this.movesMake.length - 1];
-            if (
-                take === 0 &&
-                isPawn(this.board[end]) &&
-                parseInt(end / 8) === parseInt(i / 8) &&
-                Abs(parseInt(end / 8) - parseInt(start / 8)) === 2 &&
-                Abs((i % 8) - (end % 8)) === 1
-            )
-                res.push(end + sens);
+            const enPass = this.EnPassant(i);
+            if (enPass) res.push(enPass + sens);
         }
         if (isKnight(type)) {
             for (const ind of knightSquares(i))
@@ -123,7 +128,10 @@ export class BoardCLASS {
             return res;
         }
         if (isKing(type)) {
-            if ((this.rock[color][0] === 0 || this.rock[color][1] === 0) && !this.isSquareInCheck(this.coordKings[color], color)) {
+            if (
+                (this.rock[color][0] === 0 || this.rock[color][1] === 0) &&
+                !this.isSquareInCheck(this.coordKings[color], color)
+            ) {
                 if (
                     !this.rock[color][0] &&
                     this.board[y * 8] === 8 - color &&
@@ -165,15 +173,8 @@ export class BoardCLASS {
                 res.push(takeRight);
             if (x !== 0 && this.board[takeLeft] !== 0 && this.board[takeLeft] % 2 !== color && this.isVerif(i, takeLeft))
                 res.push(takeLeft);
-            const [start, end, take] = this.movesMake[this.movesMake.length - 1];
-            if (
-                take === 0 &&
-                isPawn(this.board[end]) &&
-                parseInt(end / 8) === parseInt(i / 8) &&
-                Abs(parseInt(end / 8) - parseInt(start / 8)) === 2 &&
-                Abs((i % 8) - (end % 8)) === 1
-            )
-                res.push(end + sens);
+            const enPass = this.EnPassant(i);
+            if (enPass) res.push(enPass + sens);
             return res;
         }
         if (isKnight(type)) {
@@ -239,11 +240,7 @@ export class BoardCLASS {
                         if (type && type % 2 !== color) {
                             if (this.isVerif(i, square)) res.push(square);
                             break;
-                        } else if (
-                            (this.AttackByBishop(square, color) || this.AttackByRock(square, color)) &&
-                            this.isVerif(i, square)
-                        )
-                            res.push(square);
+                        }
                     } else break;
                 }
             }
@@ -309,13 +306,15 @@ export class BoardCLASS {
         for (const ind of kingSquares(i)) if (this.board[ind] === 11 + color) return true;
         return false;
     }
-    makeMove(i, ind, promotion) {
+    MakeMove(m) {
+        const { i, ind, p, deleted } = m;
         const type = this.board[i];
         const color = type % 2;
-        const deleting = this.board[ind];
         const x = ind % 8;
         const y = parseInt(ind / 8);
-        if (isPawn(type) && x !== i % 8 && !deleting) this.board[parseInt(i / 8) * 8 + x] = 0;
+        //verif enPassant
+        if (isPawn(type) && x !== i % 8 && !deleted) this.board[parseInt(i / 8) * 8 + x] = 0;
+        //verif rock
         if (isKing(type)) {
             this.coordKings[color] = ind;
             this.rock[color][0]++;
@@ -330,16 +329,17 @@ export class BoardCLASS {
                 }
             }
         }
+        //verif cancel rock
         if (isRock(type) && (i % 8 === 0 || i % 8 === 7) && parseInt(i / 8) === 7 * (1 - color)) this.rock[color][(i % 8) / 7]++;
         //make move and manage promotion
-        if (promotion) this.board[ind] = promotion;
+        if (p) this.board[ind] = p;
         else this.board[ind] = this.board[i];
         this.board[i] = 0;
         //add move in allMoves
-        this.movesMake.push([i, ind, deleting]);
+        this.movesMake.push(m);
     }
-    removeMove(promotion) {
-        const [i, ind, deleted] = this.movesMake.pop();
+    UnMakeMove() {
+        const { i, ind, deleted, p } = this.movesMake.pop();
         const type = this.board[ind];
         const color = type % 2;
         const x = i % 8;
@@ -360,63 +360,19 @@ export class BoardCLASS {
             }
         }
         if (isRock(type) && (x === 0 || x === 7) && y === 7 * (1 - color)) this.rock[color][x / 7]--;
-        if (promotion) this.board[i] = 2 - color;
+        if (p) this.board[i] = 2 - color;
         else this.board[i] = this.board[ind];
         this.board[ind] = deleted;
-    }
-    GeneratorMove(c) {
-        let r = [];
-        for (let i = 0; i < 64; i++) {
-            const p = this.board[i];
-            if (p && p % 2 === c)
-                for (const ind of this.LegalMove(i)) {
-                    if (isPawn(p) && (ind < 8 || ind > 55))
-                        for (const pro of [10, 4, 8, 6]) r.push([i, ind, pro - c, pieceOrders[pro]]);
-                    else {
-                        let t = ind;
-                        let t2 = i;
-                        if (c) {
-                            t = (7 - parseInt(ind / 8)) * 8 + (ind % 8);
-                            t2 = (7 - parseInt(i / 8)) * 8 + (i % 8);
-                        }
-                        r.push([
-                            i,
-                            ind,
-                            undefined,
-                            pieceOrders[this.board[ind]] +
-                                posV[parseInt((p - 1) / 2)][this.gameValue][t] -
-                                posV[parseInt((p - 1) / 2)][this.gameValue][t2],
-                        ]);
-                    }
-                }
-        }
-        return triFusion(r);
-    }
-    GeneratorCapture(c) {
-        let r = [];
-        for (let i = 0; i < 64; i++) {
-            const p = this.board[i];
-            if (p && p % 2 === c) {
-                for (const ind of this.CaptureMove(i)) {
-                    //Mange Promotion
-                    if (isPawn(p) && (ind < 8 || ind > 55))
-                        for (const pro of [10, 4, 8, 6]) r.push([i, ind, pro - c, pieceOrders[pro] - pieceOrders[p]]);
-                    //other Capture
-                    else r.push([i, ind, undefined, pieceOrders[this.board[ind]]]);
-                }
-            }
-        }
-        return triFusion(r);
     }
     VerifRep() {
         const length = this.movesMake.length;
         if (length < 7) return false;
-        const [s1, e1, t1] = this.movesMake[length - 1];
-        const [s2, e2, t2] = this.movesMake[length - 2];
-        const [s3, e3, t3] = this.movesMake[length - 3];
-        const [s4, e4, t4] = this.movesMake[length - 4];
-        const [s5, e5, t5] = this.movesMake[length - 5];
-        const [s6, e6, t6] = this.movesMake[length - 6];
+        const { i: s1, ind: e1, deleted: t1 } = this.movesMake[length - 1];
+        const { i: s2, ind: e2, deleted: t2 } = this.movesMake[length - 2];
+        const { i: s3, ind: e3, deleted: t3 } = this.movesMake[length - 3];
+        const { i: s4, ind: e4, deleted: t4 } = this.movesMake[length - 4];
+        const { i: s5, ind: e5, deleted: t5 } = this.movesMake[length - 5];
+        const { i: s6, ind: e6, deleted: t6 } = this.movesMake[length - 6];
         return (
             !t1 &&
             !t2 &&

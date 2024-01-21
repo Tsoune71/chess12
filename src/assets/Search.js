@@ -8,11 +8,11 @@ BoardCLASS.prototype.Search = function (depth, color, alpha, beta) {
     if (depth === 0) return this.SearchCapture(color, alpha, beta);
     //get Moves
     const moves = this.GeneratorMove(color);
-    for (const [i, ind, p] of moves) {
-        this.makeMove(i, ind, p);
-        let e = -this.Search(depth - 1, (color + 1) % 2, -beta, -alpha);
-        if (p) e -= depth;
-        this.removeMove(p);
+    for (const move of moves) {
+        this.MakeMove(move);
+        let e = -this.Search(depth - 1, +!color, -beta, -alpha);
+        if (move.p) e -= depth;
+        this.UnMakeMove();
         if (e >= beta) return beta;
         alpha = Max(e, alpha);
     }
